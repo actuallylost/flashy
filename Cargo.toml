@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+
+members = [
+   "apps/tauri-web/src-tauri/",
+   "services/*",
+   "crates/*",
+   "tools/*",
+]
+
+exclude = [
+   "services/nest-api"
+]

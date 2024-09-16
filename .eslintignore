@@ -1,0 +1,5 @@
+# ignore javascript
+*.js
+
+# ignore rust
+crates/
