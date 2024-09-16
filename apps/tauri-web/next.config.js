@@ -1,4 +1,5 @@
 const isProd = process.env.NODE_ENV === "production";
+const internalHost = process.env.TAURI_DEV_HOST || "localhost";
 module.exports = async (phase, { defaultConfig }) => {
 	let internalHost = null;
 	if (!isProd) {
@@ -10,6 +11,7 @@ module.exports = async (phase, { defaultConfig }) => {
 	 */
 	const nextConfig = {
 		reactStrictMode: true,
+		output: "export",
 		swcMinify: true,
 		// Note: This experimental feature is required to use NextJS Image in SSG mode.
 		// See https://nextjs.org/docs/messages/export-image-api for different workarounds.
