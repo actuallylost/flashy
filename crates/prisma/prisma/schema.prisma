@@ -8,6 +8,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TestModel {
-  id String @id
+model User {
+  id         String   @id @unique @default(uuid())
+  username   String   @unique
+  email      String   @unique
+  decks      Deck[]
+  deck_count Int
+  created_at DateTime @default(now())
+  Card       Card[]
+}
+
+model Deck {
+  id         String   @id @unique @default(uuid())
+  creator_id String
+  cards      Card[]
+  created_at DateTime @default(now())
+
+  creator User @relation(fields: [creator_id], references: [id])
+}
+
+model Card {
+  id         String   @id @unique @default(uuid())
+  creator_id String
+  deck_id    String
+  created_at DateTime @default(now())
+
+  creator User @relation(fields: [creator_id], references: [id])
+  deck    Deck @relation(fields: [deck_id], references: [id])
 }
