@@ -13,15 +13,18 @@ model User {
   username   String   @unique
   email      String   @unique
   decks      Deck[]
-  deck_count Int
+  updated_at DateTime @default(now())
   created_at DateTime @default(now())
-  Card       Card[]
+
+  card Card[]
 }
 
 model Deck {
   id         String   @id @unique @default(uuid())
-  creator_id String
+  name       String
   cards      Card[]
+  creator_id String
+  updated_at DateTime @default(now())
   created_at DateTime @default(now())
 
   creator User @relation(fields: [creator_id], references: [id])
@@ -34,6 +37,7 @@ model Card {
   back_desc  String
   creator_id String
   deck_id    String?
+  updated_at DateTime @default(now())
   created_at DateTime @default(now())
 
   creator User  @relation(fields: [creator_id], references: [id])
