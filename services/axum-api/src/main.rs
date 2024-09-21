@@ -1,4 +1,5 @@
-mod card;
+mod cards;
+mod users;
 
 use std::{sync::Arc, time::Duration};
 
@@ -8,7 +9,8 @@ use tower::{BoxError, ServiceBuilder};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use card::{cards, create_card};
+use cards::{card, cards, create_card, delete_card, update_card};
+use users::{delete_user, update_user, user, users};
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -38,11 +40,21 @@ async fn main() {
     let state = AppState {
         prisma_client: client,
     };
-    // create routers
-    let cards_router = Router::new().route("/", get(cards).post(create_card));
+    // users router
+    let users_router = Router::new()
+        .route("/", get(users))
+        .route("/:id", get(user).put(update_user).delete(delete_user));
+    // cards router
+    let cards_router = Router::new()
+        .route("/", get(cards).post(create_card))
+        .route("/:id", get(card).put(update_card).delete(delete_card));
+    // decks router
+    let decks_router = Router::new();
     // declare routes and respective handlers
     let app = Router::new()
+        .nest("/users", users_router)
         .nest("/cards", cards_router)
+        .nest("/decks", decks_router)
         // add middleware for request timeout
         .layer(
             ServiceBuilder::new()
