@@ -15,10 +15,10 @@ pub async fn cards(
 ) -> Result<Json<Vec<prisma::card::Data>>, (StatusCode, String)> {
     let cards_query = state.prisma_client.card().find_many(vec![]).exec().await;
 
-    cards_query.map(|cards| Json(cards)).map_err(|_| {
+    cards_query.map(|cards| Json(cards)).map_err(|err| {
         (
             StatusCode::NOT_FOUND,
-            format!("Could not find any cards in the database."),
+            format!("Could not find any cards in the database - {}", err),
         )
     })
 }
