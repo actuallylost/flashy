@@ -1,9 +1,11 @@
 mod cards;
+mod decks;
 mod users;
 
 use std::{sync::Arc, time::Duration};
 
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, routing::get, Router};
+use decks::{deck, decks, delete_deck, update_deck};
 use prisma::PrismaClient;
 use tower::{BoxError, ServiceBuilder};
 use tower_http::trace::TraceLayer;
@@ -49,7 +51,9 @@ async fn main() {
         .route("/", get(cards).post(create_card))
         .route("/:id", get(card).put(update_card).delete(delete_card));
     // decks router
-    let decks_router = Router::new();
+    let decks_router = Router::new()
+        .route("/decks", get(decks))
+        .route("/:id", get(deck).put(update_deck).delete(delete_deck));
     // declare routes and respective handlers
     let app = Router::new()
         .nest("/users", users_router)
