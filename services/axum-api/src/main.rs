@@ -1,3 +1,4 @@
+mod auth;
 mod cards;
 mod decks;
 mod users;
@@ -54,7 +55,8 @@ async fn main() {
     let decks_router = Router::new()
         .route("/decks", get(decks))
         .route("/:id", get(deck).put(update_deck).delete(delete_deck));
-    // declare routes and respective handlers
+    let auth_router = Router::new();
+    // app router
     let app = Router::new()
         .nest("/users", users_router)
         .nest("/cards", cards_router)
