@@ -43,6 +43,7 @@ async fn main() {
     let state = AppState {
         prisma_client: client,
     };
+
     // users router
     let users_router = Router::new()
         .route("/", get(users))
@@ -55,12 +56,16 @@ async fn main() {
     let decks_router = Router::new()
         .route("/decks", get(decks))
         .route("/:id", get(deck).put(update_deck).delete(delete_deck));
+    // auth router
     let auth_router = Router::new();
+
     // app router
     let app = Router::new()
+        // add nested routers
         .nest("/users", users_router)
         .nest("/cards", cards_router)
         .nest("/decks", decks_router)
+        .nest("/auth", auth_router)
         // add middleware for request timeout
         .layer(
             ServiceBuilder::new()
