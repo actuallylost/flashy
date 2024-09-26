@@ -1,5 +1,5 @@
 [package]
-name = "axum-api"
+name = "kioku-api"
 version = "0.1.0"
 edition = "2021"
 
