@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
 
-members = ["apps/tauri-web/src-tauri/", "services/*", "crates/*", "tools/*"]
+members = ["apps/kioku-web/src-tauri/", "services/*", "crates/*", "tools/*"]
