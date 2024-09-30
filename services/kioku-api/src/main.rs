@@ -7,14 +7,14 @@ mod users;
 use std::{sync::Arc, time::Duration};
 
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, routing::get, Router};
-use decks::{deck, decks, delete_deck, update_deck};
+use decks::{create_deck, deck, decks, delete_deck, update_deck};
 use prisma::PrismaClient;
 use tower::{BoxError, ServiceBuilder};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use cards::{card, cards, create_card, delete_card, update_card};
-use users::{delete_user, update_user, user, users};
+use users::{create_user, delete_user, update_user, user, users};
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -47,7 +47,7 @@ async fn main() {
 
     // users router
     let users_router = Router::new()
-        .route("/", get(users))
+        .route("/", get(users).post(create_user))
         .route("/:id", get(user).put(update_user).delete(delete_user));
     // cards router
     let cards_router = Router::new()
@@ -55,7 +55,7 @@ async fn main() {
         .route("/:id", get(card).put(update_card).delete(delete_card));
     // decks router
     let decks_router = Router::new()
-        .route("/decks", get(decks))
+        .route("/decks", get(decks).post(create_deck))
         .route("/:id", get(deck).put(update_deck).delete(delete_deck));
     // auth router
     let auth_router = Router::new();
