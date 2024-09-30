@@ -67,7 +67,7 @@ pub async fn create_card(
     if user_query.is_none() {
         return Err((
             StatusCode::NOT_FOUND,
-            format!("Could not find user with id: {}", payload.creator_id),
+            format!("Could not find user with id {}", payload.creator_id),
         ));
     }
 
@@ -88,7 +88,7 @@ pub async fn create_card(
         Ok(card) => Ok(Json(card)),
         Err(err) => Err((
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Could not create card: {}", err),
+            format!("Could not create card - {}", err),
         )),
     }
 }
@@ -111,5 +111,5 @@ pub async fn update_card(
 }
 
 // TODO: Implement
-#[debug_handler]
+// #[debug_handler]
 pub async fn delete_card(Path(id): Path<Uuid>, State(state): State<AppState>) {}
