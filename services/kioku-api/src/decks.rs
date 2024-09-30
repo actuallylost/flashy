@@ -7,12 +7,12 @@ use axum_macros::debug_handler;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::AppState;
+use crate::{types::DeckData, AppState};
 
 #[debug_handler]
 pub async fn decks(
     State(state): State<AppState>,
-) -> Result<Json<Vec<prisma::deck::Data>>, (StatusCode, String)> {
+) -> Result<Json<Vec<DeckData>>, (StatusCode, String)> {
     let decks_query = state.prisma_client.deck().find_many(vec![]).exec().await;
 
     decks_query.map(|data| Json(data)).map_err(|err| {
@@ -27,7 +27,7 @@ pub async fn decks(
 pub async fn deck(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
-) -> Result<Json<prisma::deck::Data>, (StatusCode, String)> {
+) -> Result<Json<DeckData>, (StatusCode, String)> {
     let deck_query = state
         .prisma_client
         .deck()

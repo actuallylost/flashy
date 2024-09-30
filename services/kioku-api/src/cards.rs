@@ -7,12 +7,12 @@ use axum_macros::debug_handler;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::AppState;
+use crate::{types::CardData, AppState};
 
 #[debug_handler]
 pub async fn cards(
     State(state): State<AppState>,
-) -> Result<Json<Vec<prisma::card::Data>>, (StatusCode, String)> {
+) -> Result<Json<Vec<CardData>>, (StatusCode, String)> {
     let cards_query = state.prisma_client.card().find_many(vec![]).exec().await;
 
     cards_query.map(|cards| Json(cards)).map_err(|err| {
@@ -27,7 +27,7 @@ pub async fn cards(
 pub async fn card(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
-) -> Result<Json<prisma::card::Data>, (StatusCode, String)> {
+) -> Result<Json<CardData>, (StatusCode, String)> {
     let card_query = state
         .prisma_client
         .card()
@@ -55,7 +55,7 @@ pub struct CreateCard {
 pub async fn create_card(
     State(state): State<AppState>,
     Json(payload): Json<CreateCard>,
-) -> Result<Json<prisma::card::Data>, (StatusCode, String)> {
+) -> Result<Json<CardData>, (StatusCode, String)> {
     let user_query = state
         .prisma_client
         .user()

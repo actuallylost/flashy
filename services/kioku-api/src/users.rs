@@ -7,11 +7,11 @@ use axum_macros::debug_handler;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::AppState;
+use crate::{types::UserData, AppState};
 
 pub async fn users(
     State(state): State<AppState>,
-) -> Result<Json<Vec<prisma::user::Data>>, (StatusCode, String)> {
+) -> Result<Json<Vec<UserData>>, (StatusCode, String)> {
     let users_query = state.prisma_client.user().find_many(vec![]).exec().await;
 
     users_query.map(|users| Json(users)).map_err(|err| {
@@ -25,7 +25,7 @@ pub async fn users(
 pub async fn user(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
-) -> Result<Json<prisma::user::Data>, (StatusCode, String)> {
+) -> Result<Json<UserData>, (StatusCode, String)> {
     let user_query = state
         .prisma_client
         .user()

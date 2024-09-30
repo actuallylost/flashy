@@ -1,6 +1,7 @@
 mod auth;
 mod cards;
 mod decks;
+mod types;
 mod users;
 
 use std::{sync::Arc, time::Duration};
