@@ -36,7 +36,7 @@ pub async fn user(
     user_query.map(|user| Json(user.unwrap())).map_err(|err| {
         (
             StatusCode::NOT_FOUND,
-            format!("Could not find user - {}", err),
+            format!("Could not find user with id {} - {}", id.to_string(), err),
         )
     })
 }
@@ -73,7 +73,7 @@ pub async fn create_user(
     create_user.map(|user| Json(user)).map_err(|err| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Could not create user - {}", err),
+            format!("Could not create user with {}", err),
         )
     })
 }
@@ -116,11 +116,41 @@ pub async fn update_user(
     updated_user.map(|user| Json(user)).map_err(|err| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Could not update user - {}", err),
+            format!("Could not update user with id {} - {}", id.to_string(), err),
         )
     })
 }
 
-// TODO: Implement
 #[debug_handler]
-pub async fn delete_user(Path(id): Path<Uuid>, State(state): State<AppState>) {}
+pub async fn delete_user(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> Result<Json<UserData>, (StatusCode, String)> {
+    let user_query = state
+        .prisma_client
+        .user()
+        .find_unique(prisma::user::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    if let Err(err) = user_query {
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Could not find user with id {} - {}", id.to_string(), err),
+        ));
+    }
+
+    let delete_user = state
+        .prisma_client
+        .user()
+        .delete(prisma::user::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    delete_user.map(|user| Json(user)).map_err(|err| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Could not delete user with id {} - {}", id.to_string(), err),
+        )
+    })
+}
