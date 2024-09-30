@@ -38,7 +38,7 @@ pub async fn card(
     card_query.map(|cards| Json(cards.unwrap())).map_err(|err| {
         (
             StatusCode::NOT_FOUND,
-            format!("Could not find any cards in the database - {}", err),
+            format!("Could not find card with id {} - {}", id.to_string(), err),
         )
     })
 }
@@ -61,17 +61,19 @@ pub async fn create_card(
         .user()
         .find_unique(prisma::user::id::equals(payload.creator_id.clone()))
         .exec()
-        .await
-        .unwrap();
+        .await;
 
-    if user_query.is_none() {
+    if let Err(err) = user_query {
         return Err((
             StatusCode::NOT_FOUND,
-            format!("Could not find user with id: {}", payload.creator_id),
+            format!(
+                "Could not find user with id {} - {}",
+                payload.creator_id, err
+            ),
         ));
     }
 
-    let card_query = state
+    let create_card = state
         .prisma_client
         .card()
         .create(
@@ -84,13 +86,12 @@ pub async fn create_card(
         .exec()
         .await;
 
-    match card_query {
-        Ok(card) => Ok(Json(card)),
-        Err(err) => Err((
+    create_card.map(|card| Json(card)).map_err(|err| {
+        (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Could not create card: {}", err),
-        )),
-    }
+            format!("Could not create card - {}", err),
+        )
+    })
 }
 
 #[derive(Deserialize)]
