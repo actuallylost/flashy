@@ -41,15 +41,43 @@ pub async fn user(
     })
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct CreateUser {
     username: String,
     email: String,
 }
 
 // TODO: Implement
-// #[debug_handler]
-pub async fn create_user(Json(payload): Json<CreateUser>, State(state): State<AppState>) {}
+#[debug_handler]
+pub async fn create_user(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateUser>,
+) -> Result<Json<UserData>, (StatusCode, String)> {
+    let user_query = state
+        .prisma_client
+        .user()
+        .find_unique(prisma::user::username::equals(payload.username.clone()))
+        .exec()
+        .await;
+
+    if user_query.is_ok() {
+        return Err((StatusCode::CONFLICT, format!("User already exists")));
+    }
+
+    let create_user = state
+        .prisma_client
+        .user()
+        .create(payload.username, payload.email, vec![])
+        .exec()
+        .await;
+
+    create_user.map(|user| Json(user)).map_err(|err| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Could not create user - {}", err),
+        )
+    })
+}
 
 #[derive(Deserialize)]
 pub struct UpdateUser {
@@ -60,8 +88,8 @@ pub struct UpdateUser {
 // #[debug_handler]
 pub async fn update_user(
     Path(id): Path<Uuid>,
-    Json(payload): Json<UpdateUser>,
     State(state): State<AppState>,
+    Json(payload): Json<UpdateUser>,
 ) {
 }
 
