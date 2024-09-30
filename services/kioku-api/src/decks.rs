@@ -52,7 +52,7 @@ pub struct CreateDeck {
 
 // TODO: Implement
 // #[debug_handler]
-pub async fn create_deck(Json(payload): Json<CreateDeck>, State(state): State<AppState>) {}
+pub async fn create_deck(State(state): State<AppState>, Json(payload): Json<CreateDeck>) {}
 
 #[derive(Deserialize)]
 pub struct UpdateDeck {
@@ -64,8 +64,8 @@ pub struct UpdateDeck {
 // #[debug_handler]
 pub async fn update_deck(
     Path(id): Path<Uuid>,
-    Json(payload): Json<UpdateDeck>,
     State(state): State<AppState>,
+    Json(payload): Json<UpdateDeck>,
 ) {
 }
 

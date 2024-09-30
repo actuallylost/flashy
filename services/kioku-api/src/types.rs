@@ -1,4 +1,4 @@
-//! Shorthand for prisma's model data types
+//! Shorthands for prisma's model data types
 
 /// Prisma User Data
 pub type UserData = prisma::user::Data;

@@ -105,8 +105,8 @@ pub struct UpdateCard {
 // #[debug_handler]
 pub async fn update_card(
     Path(id): Path<Uuid>,
-    Json(payload): Json<UpdateCard>,
     State(state): State<AppState>,
+    Json(payload): Json<UpdateCard>,
 ) {
 }
 
