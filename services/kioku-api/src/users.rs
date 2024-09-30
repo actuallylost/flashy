@@ -47,7 +47,6 @@ pub struct CreateUser {
     email: String,
 }
 
-// TODO: Implement
 #[debug_handler]
 pub async fn create_user(
     State(state): State<AppState>,
@@ -84,13 +83,42 @@ pub struct UpdateUser {
     username: String,
 }
 
-// TODO: Implement
-// #[debug_handler]
+#[debug_handler]
 pub async fn update_user(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
     Json(payload): Json<UpdateUser>,
-) {
+) -> Result<Json<UserData>, (StatusCode, String)> {
+    let user_query = state
+        .prisma_client
+        .user()
+        .find_unique(prisma::user::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    if let Err(err) = user_query {
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Could not find user with id {} - {}", id.to_string(), err),
+        ));
+    }
+
+    let updated_user = state
+        .prisma_client
+        .user()
+        .update(
+            prisma::user::id::equals(id.to_string()),
+            vec![prisma::user::username::set(payload.username)],
+        )
+        .exec()
+        .await;
+
+    updated_user.map(|user| Json(user)).map_err(|err| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Could not update user - {}", err),
+        )
+    })
 }
 
 // TODO: Implement
