@@ -99,18 +99,82 @@ pub struct UpdateCard {
     name: String,
     front_desc: String,
     back_desc: String,
-    deck_id: String,
+    deck_id: Option<String>,
 }
 
-// TODO: Implement
-// #[debug_handler]
+#[debug_handler]
 pub async fn update_card(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
     Json(payload): Json<UpdateCard>,
-) {
+) -> Result<Json<CardData>, (StatusCode, String)> {
+    let card_query = state
+        .prisma_client
+        .card()
+        .find_unique(prisma::card::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    if let Err(err) = card_query {
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Could not find card with id {} - {}", id.to_string(), err),
+        ));
+    }
+
+    let updated_card = state
+        .prisma_client
+        .card()
+        .update(
+            prisma::card::id::equals(id.to_string()),
+            vec![
+                prisma::card::name::set(payload.name),
+                prisma::card::front_desc::set(payload.front_desc),
+                prisma::card::back_desc::set(payload.back_desc),
+                prisma::card::deck_id::set(payload.deck_id),
+            ],
+        )
+        .exec()
+        .await;
+
+    updated_card.map(|card| Json(card)).map_err(|err| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Could not update card with id {} - {}", id.to_string(), err),
+        )
+    })
 }
 
-// TODO: Implement
 #[debug_handler]
-pub async fn delete_card(Path(id): Path<Uuid>, State(state): State<AppState>) {}
+pub async fn delete_card(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> Result<Json<CardData>, (StatusCode, String)> {
+    let card_query = state
+        .prisma_client
+        .card()
+        .find_unique(prisma::card::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    if let Err(err) = card_query {
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Could not find card with id {} - {}", id.to_string(), err),
+        ));
+    }
+
+    let deleted_card = state
+        .prisma_client
+        .card()
+        .delete(prisma::card::id::equals(id.to_string()))
+        .exec()
+        .await;
+
+    deleted_card.map(|card| Json(card)).map_err(|err| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Could not delete card with id {} - {}", id.to_string(), err),
+        )
+    })
+}
