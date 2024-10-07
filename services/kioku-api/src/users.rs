@@ -73,7 +73,7 @@ pub async fn create_user(
     create_user.map(|user| Json(user)).map_err(|err| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Could not create user with {}", err),
+            format!("Could not create user - {}", err),
         )
     })
 }
