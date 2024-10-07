@@ -4,6 +4,9 @@ use axum::{
     Json,
 };
 use axum_macros::debug_handler;
+use prisma::card as Card;
+use prisma::deck as Deck;
+use prisma::user as User;
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -31,7 +34,7 @@ pub async fn card(
     let card_query = state
         .prisma_client
         .card()
-        .find_unique(prisma::card::id::equals(id.to_string()))
+        .find_unique(Card::id::equals(id.to_string()))
         .exec()
         .await;
 
@@ -49,6 +52,7 @@ pub struct CreateCard {
     front_desc: String,
     back_desc: String,
     creator_id: String,
+    deck_id: Uuid,
 }
 
 #[debug_handler]
@@ -59,10 +63,11 @@ pub async fn create_card(
     let user_query = state
         .prisma_client
         .user()
-        .find_unique(prisma::user::id::equals(payload.creator_id.clone()))
+        .find_unique(User::id::equals(payload.creator_id.clone()))
         .exec()
         .await;
 
+    // User not found
     if let Err(err) = user_query {
         return Err((
             StatusCode::NOT_FOUND,
@@ -73,6 +78,21 @@ pub async fn create_card(
         ));
     }
 
+    let deck_query = state
+        .prisma_client
+        .deck()
+        .find_unique(Deck::id::equals(payload.deck_id))
+        .exec()
+        .await;
+
+    // Deck not found
+    if let Err(err) = deck_query {
+        return Err((
+            StatusCode::NOT_FOUND,
+            format!("Could not find deck with id {} - {}", payload.deck_id, err),
+        ));
+    }
+
     let create_card = state
         .prisma_client
         .card()
@@ -80,7 +100,8 @@ pub async fn create_card(
             payload.name,
             payload.front_desc,
             payload.back_desc,
-            prisma::user::id::equals(payload.creator_id),
+            User::id::equals(payload.creator_id),
+            Deck::id::equals(payload.deck_id),
             vec![],
         )
         .exec()
@@ -111,7 +132,7 @@ pub async fn update_card(
     let card_query = state
         .prisma_client
         .card()
-        .find_unique(prisma::card::id::equals(id.to_string()))
+        .find_unique(Card::id::equals(id.to_string()))
         .exec()
         .await;
 
@@ -126,12 +147,12 @@ pub async fn update_card(
         .prisma_client
         .card()
         .update(
-            prisma::card::id::equals(id.to_string()),
+            Card::id::equals(id.to_string()),
             vec![
-                prisma::card::name::set(payload.name),
-                prisma::card::front_desc::set(payload.front_desc),
-                prisma::card::back_desc::set(payload.back_desc),
-                prisma::card::deck_id::set(payload.deck_id),
+                Card::name::set(payload.name),
+                Card::front_desc::set(payload.front_desc),
+                Card::back_desc::set(payload.back_desc),
+                Card::deck_id::set(payload.deck_id),
             ],
         )
         .exec()
@@ -153,7 +174,7 @@ pub async fn delete_card(
     let card_query = state
         .prisma_client
         .card()
-        .find_unique(prisma::card::id::equals(id.to_string()))
+        .find_unique(Card::id::equals(id.to_string()))
         .exec()
         .await;
 
@@ -167,7 +188,7 @@ pub async fn delete_card(
     let deleted_card = state
         .prisma_client
         .card()
-        .delete(prisma::card::id::equals(id.to_string()))
+        .delete(Card::id::equals(id.to_string()))
         .exec()
         .await;
 
