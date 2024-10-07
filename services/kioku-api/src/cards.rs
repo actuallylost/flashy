@@ -7,7 +7,10 @@ use axum_macros::debug_handler;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{types::CardData, AppState};
+use crate::{
+    types::{Card, CardData, User},
+    AppState,
+};
 
 #[debug_handler]
 pub async fn cards(
@@ -31,7 +34,7 @@ pub async fn card(
     let card_query = state
         .prisma_client
         .card()
-        .find_unique(prisma::card::id::equals(id.to_string()))
+        .find_unique(Card::id::equals(id.to_string()))
         .exec()
         .await;
 
@@ -59,7 +62,7 @@ pub async fn create_card(
     let user_query = state
         .prisma_client
         .user()
-        .find_unique(prisma::user::id::equals(payload.creator_id.clone()))
+        .find_unique(User::id::equals(payload.creator_id.clone()))
         .exec()
         .await
         .unwrap();
@@ -78,7 +81,7 @@ pub async fn create_card(
             payload.name,
             payload.front_desc,
             payload.back_desc,
-            prisma::user::id::equals(payload.creator_id),
+            User::id::equals(payload.creator_id),
             vec![],
         )
         .exec()
