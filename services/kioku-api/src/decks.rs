@@ -7,7 +7,10 @@ use axum_macros::debug_handler;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{types::DeckData, AppState};
+use crate::{
+    types::{CardData, DeckData},
+    AppState,
+};
 
 #[debug_handler]
 pub async fn decks(
@@ -46,22 +49,40 @@ pub async fn deck(
 #[derive(Deserialize)]
 pub struct CreateDeck {
     name: String,
-    cards: Vec<Uuid>,
+    cards: Vec<CardData>,
     creator_id: Uuid,
 }
 
-// TODO: Implement
-// #[debug_handler]
-pub async fn create_deck(State(state): State<AppState>, Json(payload): Json<CreateDeck>) {}
+#[debug_handler]
+pub async fn create_deck(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateDeck>,
+) -> Result<Json<DeckData>, (StatusCode, String)> {
+    for card in payload.cards {
+        let card_query = state
+            .prisma_client
+            .card()
+            .find_unique(prisma::card::id::equals(card.id))
+            .exec()
+            .await;
+
+        if let Err(err) = card_query {
+            return Err((
+                StatusCode::NOT_FOUND,
+                format!("Could not find card in the database - {}", err),
+            ));
+        }
+    }
+}
 
 #[derive(Deserialize)]
 pub struct UpdateDeck {
     name: String,
-    cards: Vec<Uuid>,
+    cards: Vec<CardData>,
 }
 
 // TODO: Implement
-// #[debug_handler]
+#[debug_handler]
 pub async fn update_deck(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
