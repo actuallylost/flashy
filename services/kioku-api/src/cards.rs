@@ -4,13 +4,13 @@ use axum::{
     Json,
 };
 use axum_macros::debug_handler;
-use prisma::card as Card;
-use prisma::deck as Deck;
-use prisma::user as User;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{types::CardData, AppState};
+use crate::{
+    types::{Card, CardData, Deck, User},
+    AppState,
+};
 
 #[debug_handler]
 pub async fn cards(
