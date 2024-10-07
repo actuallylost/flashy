@@ -36,10 +36,10 @@ model Card {
   front_desc String
   back_desc  String
   creator_id String
-  deck_id    String?
+  deck_id    String
   updated_at DateTime @default(now())
   created_at DateTime @default(now())
 
-  creator User  @relation(fields: [creator_id], references: [id])
-  deck    Deck? @relation(fields: [deck_id], references: [id])
+  creator User @relation(fields: [creator_id], references: [id])
+  deck    Deck @relation(fields: [deck_id], references: [id])
 }
